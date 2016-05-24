@@ -17,6 +17,7 @@ lazy val scalaFirebase = project
 val specs2Version = "3.8.3-20160524134053-8145e17"
 
 libraryDependencies ++= Seq(
+  ws,
   "org.specs2" %% "specs2-core" % specs2Version % "test",
   "org.specs2" %% "specs2-mock" % specs2Version % "test",
   "org.specs2" %% "specs2-junit" % specs2Version % "test"

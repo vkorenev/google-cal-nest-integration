@@ -1,0 +1,15 @@
+@import models.nest.Structure
+
+@(structures: Iterable[Structure])
+
+@template("Your Structures") {
+  <table class="table table-hover">
+    <tbody>
+    @for(structure <- structures) {
+      <tr>
+        <td>@structure.name</td>
+      </tr>
+    }
+    </tbody>
+  </table>
+}

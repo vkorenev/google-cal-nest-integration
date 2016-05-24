@@ -1,0 +1,7 @@
+# Copy this file to auth.conf
+
+# Register your product at https://developers.nest.com/products and fill in your product details
+nest.auth {
+  productId = "Your Product Id"
+  productSecret = "Your Product Secret"
+}

@@ -1,5 +1,6 @@
 *.class
 *.log
+/conf/auth.conf
 
 # sbt specific
 .cache
