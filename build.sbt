@@ -7,6 +7,7 @@ val commonSettings = Seq(
 
 lazy val root = (project in file("."))
   .settings(commonSettings: _*)
+  .enablePlugins(PlayScala)
   .aggregate(scalaFirebase)
   .dependsOn(scalaFirebase)
 
