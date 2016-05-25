@@ -2,20 +2,18 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import com.firebase.client.Firebase
-import models.nest.{NestConfig, Structure}
+import models.nest.{NestApi, NestConfig}
 import play.api.Configuration
 import play.api.libs.ws.WSClient
-import play.api.mvc.{Action, Controller}
-import vkorenev.firebase.ScalaFirebase
+import play.api.mvc._
 
-import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class MainController @Inject() (
   ws: WSClient,
-  configuration: Configuration)(implicit exec: ExecutionContext) extends Controller {
+  configuration: Configuration,
+  nestApi: NestApi)(implicit exec: ExecutionContext) extends Controller {
 
   private val nestAccessTokenSessionKey = "nest-access-token"
 
@@ -26,19 +24,17 @@ class MainController @Inject() (
     throw new Exception("You should configure Nest Product Secret in /conf/auth.conf")
   }
 
-  def index = Action.async { request =>
+  def selectStructure = Action.async { request =>
     request.session.get(nestAccessTokenSessionKey) map { accessToken =>
-      val rootRef = new Firebase(NestConfig.apiUrl)
-      for {
-        authData <- rootRef.authWithCustomToken(accessToken)
-        structuresRef = rootRef.child("structures")
-        structuresData <- structuresRef.getSingleValue
-        structures = structuresData.getChildren.asScala map { structureData =>
-          val id = structureData.child("structure_id").getValue.asInstanceOf[String]
-          val name = structureData.child("name").getValue.asInstanceOf[String]
-          Structure(id, name)
+      nestApi.withNest(accessToken) { rootRef =>
+        nestApi.getStructures(rootRef) map { structures =>
+          if (structures.size > 1) {
+            Ok(views.html.selectStructure(structures))
+          } else {
+            Redirect(routes.MainController.setStructure(structures.head.id))
+          }
         }
-      } yield Ok(views.html.index(structures))
+      }
     } getOrElse {
       Future.successful(nestAuthRedirect("state")) // TODO Implement CSRF protection
     }
@@ -49,6 +45,10 @@ class MainController @Inject() (
       "client_id" -> Seq(nestProductId),
       "state" -> Seq(state)))
 
+  def setStructure(structureId: String) = Action {
+    Ok(structureId)
+  }
+
   def receiveNestAuthCode(code: String) = Action.async {
     ws.url(NestConfig.tokenUrl).post(Map(
       "client_id" -> Seq(nestProductId),
@@ -56,7 +56,7 @@ class MainController @Inject() (
       "client_secret" -> Seq(nestProductSecret),
       "grant_type" -> Seq("authorization_code"))) map { response =>
       val accessToken = (response.json \ "access_token").as[String]
-      Redirect(routes.MainController.index()).withSession(nestAccessTokenSessionKey -> accessToken)
+      Redirect(routes.MainController.selectStructure()).withSession(nestAccessTokenSessionKey -> accessToken)
     }
   }
 }

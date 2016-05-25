@@ -1,0 +1,11 @@
+@import models.nest.Structure
+
+@(structures: Iterable[Structure])
+
+@template("Select structure") {
+  @for(structure <- structures) {
+    <a class="btn btn-primary btn-lg btn-block" role="button" href="@routes.MainController.setStructure(structure.id)">
+    @structure.name
+    </a>
+  }
+}
