@@ -1,6 +1,8 @@
-GET         /                           controllers.MainController.selectStructure
-GET         /receiveNestAuthCode        controllers.MainController.receiveNestAuthCode(code)
-GET         /setStructure               controllers.MainController.setStructure(structureId)
+GET         /                             controllers.MainController.selectStructure
+GET         /receiveNestAuthCode          controllers.MainController.receiveNestAuthCode(code)
+GET         /setStructure                 controllers.MainController.setStructure(structureId)
+GET         /receiveGoogleAuthCode        controllers.MainController.receiveGoogleAuthCode(code)
+POST        /setCalendars                 controllers.MainController.setCalendars
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+GET         /assets/*file                 controllers.Assets.versioned(path="/public", file: Asset)

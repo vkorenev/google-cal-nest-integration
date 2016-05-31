@@ -5,3 +5,10 @@ nest.auth {
   productId = "Your Product Id"
   productSecret = "Your Product Secret"
 }
+
+# Register your project at https://console.developers.google.com
+# Then register OAuth 2.0 client IDs and fill in your credentials
+google.auth {
+  clientId = "Your Client Id"
+  clientSecret = "Your Client Secret"
+}

@@ -1,0 +1,88 @@
+{
+  "kind": "calendar#calendarList",
+  "etag": "\"1464513423324000\"",
+  "nextSyncToken": "CODm9tL5_swCEhJ2a29yZW5ldkBnbWFpbC5jb20=",
+  "items": [
+    {
+      "kind": "calendar#calendarListEntry",
+      "etag": "\"1464462628000000\"",
+      "id": "lrt8dr2sh6tksatg5pi31d6daseeqavc@import.calendar.google.com",
+      "summary": "http://people.ubuntu.com/~vorlon/UbuntuReleaseSchedule.ics",
+      "timeZone": "UTC",
+      "summaryOverride": "Ubuntu Release Schedule",
+      "colorId": "22",
+      "backgroundColor": "#f691b2",
+      "foregroundColor": "#000000",
+      "accessRole": "reader",
+      "defaultReminders": [
+      ]
+    },
+    {
+      "kind": "calendar#calendarListEntry",
+      "etag": "\"1429361913257000\"",
+      "id": "d0nqdreuqe3mepm8f7l8cdm20i6krqia@import.calendar.google.com",
+      "summary": "Principles of Reactive Programming",
+      "timeZone": "UTC",
+      "colorId": "12",
+      "backgroundColor": "#fad165",
+      "foregroundColor": "#000000",
+      "accessRole": "reader",
+      "defaultReminders": [
+      ]
+    },
+    {
+      "kind": "calendar#calendarListEntry",
+      "etag": "\"1464513326779000\"",
+      "id": "google.com_jqv7qt9iifsaj94cuknckrabd8@group.calendar.google.com",
+      "summary": "Google Code Jam",
+      "description": "Public calendar of important dates and events for Google Code Jam competitions.",
+      "timeZone": "America/Los_Angeles",
+      "colorId": "9",
+      "backgroundColor": "#7bd148",
+      "foregroundColor": "#000000",
+      "accessRole": "reader",
+      "defaultReminders": [
+      ]
+    },
+    {
+      "kind": "calendar#calendarListEntry",
+      "etag": "\"1464513423324000\"",
+      "id": "vlohs42usbeflp41kctrevhnb0@group.calendar.google.com",
+      "summary": "Nest Test",
+      "description": "Events for testing an application which sends ETA to Nest",
+      "timeZone": "Europe/Kiev",
+      "colorId": "19",
+      "backgroundColor": "#c2c2c2",
+      "foregroundColor": "#000000",
+      "selected": true,
+      "accessRole": "owner",
+      "defaultReminders": [
+        {
+          "method": "sms",
+          "minutes": 30
+        },
+        {
+          "method": "popup",
+          "minutes": 30
+        }
+      ],
+      "notificationSettings": {
+        "notifications": [
+          {
+            "type": "eventCreation",
+            "method": "email"
+          },
+          {
+            "type": "eventChange",
+            "method": "email"
+          },
+          {
+            "type": "eventCancellation",
+            "method": "email"
+          }
+        ]
+      },
+      "primary": true
+    }
+  ]
+}

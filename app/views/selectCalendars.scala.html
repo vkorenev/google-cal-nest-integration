@@ -1,0 +1,23 @@
+@import models.google.calendar.Calendar
+
+@(calendars: Seq[Calendar])
+
+@template("Select Calendars") {
+  @helper.form(action = routes.MainController.setCalendars, args = 'class -> "form-horizontal") {
+    <div class="form-group">
+    @for(calendar <- calendars) {
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" name="calendars[]" value="@calendar.id" @if(calendar.primary) {checked}>
+          @calendar.summaryOverride.getOrElse(calendar.summary)
+          <br>
+          <small>@calendar.description.getOrElse("\u00A0")</small>
+        </label>
+      </div>
+    }
+    </div>
+    <div class="form-group">
+      <button class="btn btn-primary" type="submit">Import</button>
+    </div>
+  }
+}
