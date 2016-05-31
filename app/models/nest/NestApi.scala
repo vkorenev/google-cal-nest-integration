@@ -1,5 +1,6 @@
 package models.nest
 
+import java.time.Instant
 import javax.inject.Inject
 
 import com.firebase.client.{DataSnapshot, Firebase}
@@ -30,5 +31,13 @@ class NestApi @Inject() (implicit exec: ExecutionContext) {
     val id = data.child("structure_id").getValue.asInstanceOf[String]
     val name = data.child("name").getValue.asInstanceOf[String]
     Structure(id, name)
+  }
+
+  def updateETA(rootRef: Firebase, structureId: String, tripId: String, windowBegin: Instant, windowEnd: Instant): Future[Firebase] = {
+    val etaRef = rootRef.child(s"structures/$structureId/eta")
+    etaRef.updateChildren(Map(
+      "trip_id" -> tripId,
+      "estimated_arrival_window_begin" -> windowBegin.toString,
+      "estimated_arrival_window_end" -> windowEnd.toString))
   }
 }

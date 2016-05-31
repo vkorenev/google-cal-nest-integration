@@ -1,0 +1,11 @@
+@(num: Int)
+
+@template("Import finished") {
+  @{
+    num match {
+      case 0 => "No calendars were selected."
+      case 1 => "1 calendar is monitored now."
+      case n => s"$n calendars are monitored now."
+    }
+  }
+}

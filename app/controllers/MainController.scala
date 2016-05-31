@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
+import models.EventScheduler
 import models.google.calendar.{GoogleApi, GoogleConfig}
 import models.nest.{NestApi, NestConfig}
 import play.api.Configuration
@@ -17,7 +18,8 @@ class MainController @Inject() (
   ws: WSClient,
   configuration: Configuration,
   nestApi: NestApi,
-  googleApi: GoogleApi)(implicit exec: ExecutionContext) extends Controller {
+  googleApi: GoogleApi,
+  eventScheduler: EventScheduler)(implicit exec: ExecutionContext) extends Controller {
 
   private val nestAccessTokenSessionKey = "nest-access-token"
   private val nestStructureIdSessionKey = "nest-structure-id"
@@ -93,7 +95,12 @@ class MainController @Inject() (
       calendarsForm.bindFromRequest.fold(errors => {
         BadRequest
       }, calendarIds => {
-        Ok(calendarIds.mkString("\n"))
+        calendarIds foreach { calendarId =>
+          val nestAccessToken = request.session.get(nestAccessTokenSessionKey).get
+          val structureId = request.session.get(nestStructureIdSessionKey).get
+          eventScheduler.scheduleCheckUpcomingEvents(googleAccessToken, calendarId, nestAccessToken, structureId)
+        }
+        Ok(views.html.calendarsImportFinished(calendarIds.size)).withNewSession
       })
     } getOrElse {
       googleAuthRedirect(None, GoogleConfig.calendarReadonlyScope)

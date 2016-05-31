@@ -2,6 +2,7 @@ package vkorenev
 
 import com.firebase.client.{AuthData, DataSnapshot, Firebase}
 
+import scala.collection.JavaConverters._
 import scala.concurrent.Future
 
 package object firebase {
@@ -15,6 +16,12 @@ package object firebase {
     def getSingleValue: Future[DataSnapshot] = {
       val listener = new ValueEventAdaptor
       underlying.addListenerForSingleValueEvent(listener)
+      listener.future
+    }
+
+    def updateChildren(children: Map[String, AnyRef]): Future[Firebase] = {
+      val listener = new CompletionAdaptor
+      underlying.updateChildren(children.asJava, listener)
       listener.future
     }
   }
