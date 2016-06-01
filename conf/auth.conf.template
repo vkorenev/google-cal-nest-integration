@@ -1,13 +1,19 @@
 # Copy this file to auth.conf
 
-# Register your product at https://developers.nest.com/products and fill in your product details
+# Register your product at https://developers.nest.com/products and fill in your product details below.
+# Product permissions should include ETA write.
+# Redirect URI should be <Application URL>/receiveNestAuthCode.
+# If you launch the application on localhost with default settings then the URI should be http://localhost:9000/receiveNestAuthCode.
 nest.auth {
   productId = "Your Product Id"
   productSecret = "Your Product Secret"
 }
 
-# Register your project at https://console.developers.google.com
-# Then register OAuth 2.0 client IDs and fill in your credentials
+# Register your project at https://console.developers.google.com.
+# Enable using Google Calendar API for your project.
+# Then register OAuth 2.0 client IDs and fill in your credentials below.
+# Redirect URI should be <Application URL>/receiveGoogleAuthCode.
+# If you launch the application on localhost with default settings then the URI should be http://localhost:9000/receiveGoogleAuthCode.
 google.auth {
   clientId = "Your Client Id"
   clientSecret = "Your Client Secret"
