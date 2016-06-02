@@ -4,7 +4,8 @@ import java.time.Instant
 import javax.inject.Inject
 
 import akka.actor.ActorSystem
-import models.google.calendar.{Event, GoogleApi, TimedEvent}
+import models.AppLogic.isAtHome
+import models.google.calendar.{GoogleApi, TimedEvent}
 import models.nest.NestApi
 import play.api.Logger
 import utils.JavaConversions.instantOrdering._
@@ -20,8 +21,6 @@ class EventScheduler @Inject() (system: ActorSystem, nestApi: NestApi, googleApi
   private[models] val upcomingEventsWindowEndsIn = java.time.Duration.ofHours(2)
 
   private val logger: Logger = Logger(this.getClass)
-
-  private[models] def isAtHome(event: Event): Boolean = event.location exists (_ equalsIgnoreCase "home")
 
   private[models] def getUpcomingEventsAtHome(accessToken: String, calendarId: String): Future[Seq[TimedEvent]] = {
     val now = Instant.now()

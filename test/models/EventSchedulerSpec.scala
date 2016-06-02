@@ -18,16 +18,6 @@ import scala.language.existentials
 @RunWith(classOf[JUnitRunner])
 class EventSchedulerSpec(implicit ee: ExecutionEnv) extends Specification with Mockito {
   "EventScheduler" should {
-    "filter events at home" in {
-      val eventScheduler = new EventScheduler(mock[ActorSystem], mock[NestApi], mock[GoogleApi])
-      val time = OffsetDateTime.parse("2016-01-01T00:00:00+03:00")
-      eventScheduler.isAtHome(TimedEvent("id", "summary", None, Some("home"), time, time)) must beTrue
-      eventScheduler.isAtHome(TimedEvent("id", "summary", None, Some("Home"), time, time)) must beTrue
-      eventScheduler.isAtHome(TimedEvent("id", "summary", None, Some("HOME"), time, time)) must beTrue
-      eventScheduler.isAtHome(TimedEvent("id", "summary", None, Some("work"), time, time)) must beFalse
-      eventScheduler.isAtHome(TimedEvent("id", "summary", None, None, time, time)) must beFalse
-    }
-
     "get events at home from Google Calendar" in {
       val googleAccessToken = "google_token"
       val calendarId = "calendar_id"
