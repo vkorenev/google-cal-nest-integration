@@ -19,11 +19,13 @@ import scala.language.existentials
 class EventSchedulerSpec(implicit ee: ExecutionEnv) extends Specification with Mockito {
   val now = Instant.parse("2000-01-01T00:00:00Z")
   val clock = Clock.fixed(now, ZoneOffset.UTC)
+  val nestAccessToken = "nest_token"
+  val googleAccessToken = "google_token"
+  val calendarId = "calendar_id"
+  val structureId = "structure_id"
 
   "EventScheduler" should {
     "get events at home from Google Calendar" in {
-      val googleAccessToken = "google_token"
-      val calendarId = "calendar_id"
       val googleApi = mock[GoogleApi]
       val eventScheduler = new EventScheduler(mock[ActorSystem], clock, mock[NestApi], googleApi)
 
@@ -54,21 +56,25 @@ class EventSchedulerSpec(implicit ee: ExecutionEnv) extends Specification with M
       eventsFuture must contain(exactly(upcomingEventAtHome)).await
     }
 
-    "report ETA to nest" in {
-      val nestAccessToken = "nest_token"
-      val structureId = "structure_id"
-      val eventStart = Instant.parse("2016-01-01T00:00:00Z")
-      val eventEnd = eventStart.plus(Duration.ofHours(1))
-      val event = TimedEvent("id", "", None, Some("home"),
-        eventStart.atOffset(ZoneOffset.UTC), eventEnd.atOffset(ZoneOffset.UTC))
+    val firebase = mock[Firebase]
 
+    def nestApiMock() = {
       val nestApi = mock[NestApi]
-      val firebase = mock[Firebase]
       nestApi.withNest(any[String])(any[Firebase => Future[T forSome { type T }]]) responds {
         case Array(accessToken: String, block: (Firebase => Future[_])) =>
           accessToken must beEqualTo(nestAccessToken)
           block(firebase)
       }
+      nestApi
+    }
+
+    "report ETA to nest" in {
+      val eventStart = Instant.parse("2016-01-01T00:00:00Z")
+      val eventEnd = eventStart.plus(Duration.ofHours(1))
+      val event = TimedEvent("id", "", None, Some("home"),
+        eventStart.atOffset(ZoneOffset.UTC), eventEnd.atOffset(ZoneOffset.UTC))
+
+      val nestApi = nestApiMock()
 
       val updateResult = mock[Future[Firebase]]
       nestApi.updateETA(any[Firebase], any[String], any[String], any[Instant], any[Instant]) returns updateResult
@@ -78,6 +84,24 @@ class EventSchedulerSpec(implicit ee: ExecutionEnv) extends Specification with M
       there was one(nestApi).updateETA(firebase, structureId, event.id,
         event.start.toInstant.minus(eventScheduler.etaWindowBeginsBeforeEventStart),
         event.start.toInstant.minus(eventScheduler.etaWindowEndsBeforeEventStart))
+    }
+
+    "report ETA time in the future" in {
+      val eventStart = now.plus(Duration.ofMinutes(2))
+      val eventEnd = eventStart.plus(Duration.ofHours(1))
+      val event = TimedEvent("id", "", None, Some("home"),
+        eventStart.atOffset(ZoneOffset.UTC), eventEnd.atOffset(ZoneOffset.UTC))
+
+      val nestApi = nestApiMock()
+
+      val updateResult = mock[Future[Firebase]]
+      nestApi.updateETA(any[Firebase], any[String], any[String], any[Instant], any[Instant]) returns updateResult
+
+      val eventScheduler = new EventScheduler(mock[ActorSystem], clock, nestApi, mock[GoogleApi])
+      eventScheduler.updateETA(nestAccessToken, structureId, event) must beTheSameAs(updateResult)
+      there was one(nestApi).updateETA(firebase, structureId, event.id,
+        now.plus(Duration.ofMinutes(1)),
+        now.plus(Duration.ofMinutes(1)))
     }
   }
 }

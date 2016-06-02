@@ -41,9 +41,10 @@ class EventScheduler @Inject() (
 
   private[models] def updateETA(accessToken: String, structureId: String, event: TimedEvent): Future[_] = {
     nestApi.withNest(accessToken) { rootRef =>
+      val nowPlus1Minute = Instant.now(clock).plus(java.time.Duration.ofMinutes(1))
       val eventStart = event.start.toInstant
-      val windowBegin = eventStart.minus(etaWindowBeginsBeforeEventStart)
-      val windowEnd = eventStart.minus(etaWindowEndsBeforeEventStart)
+      val windowBegin = max(nowPlus1Minute, eventStart.minus(etaWindowBeginsBeforeEventStart))
+      val windowEnd = max(nowPlus1Minute, eventStart.minus(etaWindowEndsBeforeEventStart))
       logger.debug(s"Setting ETA for structure $structureId from $windowBegin to $windowEnd because of $event")
       nestApi.updateETA(rootRef, structureId, event.id, windowBegin, windowEnd)
     }
