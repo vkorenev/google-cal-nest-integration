@@ -1,5 +1,7 @@
 # Nest Integration with Google Calendar
 
+[![Build Status](https://travis-ci.org/vkorenev/google-cal-nest-integration.svg?branch=master)](https://travis-ci.org/vkorenev/google-cal-nest-integration)
+
 This application watches Google Calendars for events which are going to be held at home.
 Then it reports ETA based on assumption that the user returns home before such an event.
 
