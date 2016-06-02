@@ -11,6 +11,7 @@ import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
+import play.api.inject.ApplicationLifecycle
 
 import scala.concurrent.Future
 import scala.language.existentials
@@ -27,7 +28,8 @@ class EventSchedulerSpec(implicit ee: ExecutionEnv) extends Specification with M
   "EventScheduler" should {
     "get events at home from Google Calendar" in {
       val googleApi = mock[GoogleApi]
-      val eventScheduler = new EventScheduler(mock[ActorSystem], clock, mock[NestApi], googleApi)
+      val eventScheduler = new EventScheduler(mock[ActorSystem], clock, mock[ApplicationLifecycle],
+        mock[NestApi], googleApi)
 
       def calcTimeFromNow(duration: Duration) = now.plus(duration).atOffset(ZoneOffset.UTC)
 
@@ -79,7 +81,8 @@ class EventSchedulerSpec(implicit ee: ExecutionEnv) extends Specification with M
       val updateResult = mock[Future[Firebase]]
       nestApi.updateETA(any[Firebase], any[String], any[String], any[Instant], any[Instant]) returns updateResult
 
-      val eventScheduler = new EventScheduler(mock[ActorSystem], clock, nestApi, mock[GoogleApi])
+      val eventScheduler = new EventScheduler(mock[ActorSystem], clock, mock[ApplicationLifecycle],
+        nestApi, mock[GoogleApi])
       eventScheduler.updateETA(nestAccessToken, structureId, event) must beTheSameAs(updateResult)
       there was one(nestApi).updateETA(firebase, structureId, event.id,
         event.start.toInstant.minus(eventScheduler.etaWindowBeginsBeforeEventStart),
@@ -97,7 +100,8 @@ class EventSchedulerSpec(implicit ee: ExecutionEnv) extends Specification with M
       val updateResult = mock[Future[Firebase]]
       nestApi.updateETA(any[Firebase], any[String], any[String], any[Instant], any[Instant]) returns updateResult
 
-      val eventScheduler = new EventScheduler(mock[ActorSystem], clock, nestApi, mock[GoogleApi])
+      val eventScheduler = new EventScheduler(mock[ActorSystem], clock, mock[ApplicationLifecycle],
+        nestApi, mock[GoogleApi])
       eventScheduler.updateETA(nestAccessToken, structureId, event) must beTheSameAs(updateResult)
       there was one(nestApi).updateETA(firebase, structureId, event.id,
         now.plus(Duration.ofMinutes(1)),

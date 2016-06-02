@@ -8,6 +8,7 @@ import models.AppLogic.isAtHome
 import models.google.calendar.{GoogleApi, TimedEvent}
 import models.nest.NestApi
 import play.api.Logger
+import play.api.inject.ApplicationLifecycle
 import utils.JavaConversions.instantOrdering._
 
 import scala.concurrent.duration._
@@ -17,6 +18,7 @@ import scala.util.{Failure, Success}
 class EventScheduler @Inject() (
   system: ActorSystem,
   clock: Clock,
+  lifecycle: ApplicationLifecycle,
   nestApi: NestApi,
   googleApi: GoogleApi)(implicit exec: ExecutionContext) {
   private[models] val etaWindowBeginsBeforeEventStart = java.time.Duration.ofMinutes(15)
@@ -62,11 +64,14 @@ class EventScheduler @Inject() (
 
   def scheduleCheckUpcomingEvents(googleAccessToken: String, calendarId: String,
     nestAccessToken: String, structureId: String) = {
-    system.scheduler.schedule(0.seconds, 1.minute) {
+    val cancellable = system.scheduler.schedule(0.seconds, 1.minute) {
       updateETAForUpcomingEvents(googleAccessToken, calendarId, nestAccessToken, structureId) onComplete {
         case Success(result) => logger.debug(s"ETA was reported for $result events")
         case Failure(error) => logger.warn("Error updating ETA", error)
       }
+    }
+    lifecycle.addStopHook { () =>
+      Future.successful(cancellable.cancel())
     }
   }
 }
