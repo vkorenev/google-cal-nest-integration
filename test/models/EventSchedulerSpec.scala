@@ -17,14 +17,16 @@ import scala.language.existentials
 
 @RunWith(classOf[JUnitRunner])
 class EventSchedulerSpec(implicit ee: ExecutionEnv) extends Specification with Mockito {
+  val now = Instant.parse("2000-01-01T00:00:00Z")
+  val clock = Clock.fixed(now, ZoneOffset.UTC)
+
   "EventScheduler" should {
     "get events at home from Google Calendar" in {
       val googleAccessToken = "google_token"
       val calendarId = "calendar_id"
       val googleApi = mock[GoogleApi]
-      val eventScheduler = new EventScheduler(mock[ActorSystem], mock[NestApi], googleApi)
+      val eventScheduler = new EventScheduler(mock[ActorSystem], clock, mock[NestApi], googleApi)
 
-      val now = Instant.now()
       def calcTimeFromNow(duration: Duration) = now.plus(duration).atOffset(ZoneOffset.UTC)
 
       val upcomingEventsWindowMed = Duration.ofMillis(
@@ -71,7 +73,7 @@ class EventSchedulerSpec(implicit ee: ExecutionEnv) extends Specification with M
       val updateResult = mock[Future[Firebase]]
       nestApi.updateETA(any[Firebase], any[String], any[String], any[Instant], any[Instant]) returns updateResult
 
-      val eventScheduler = new EventScheduler(mock[ActorSystem], nestApi, mock[GoogleApi])
+      val eventScheduler = new EventScheduler(mock[ActorSystem], clock, nestApi, mock[GoogleApi])
       eventScheduler.updateETA(nestAccessToken, structureId, event) must beTheSameAs(updateResult)
       there was one(nestApi).updateETA(firebase, structureId, event.id,
         event.start.toInstant.minus(eventScheduler.etaWindowBeginsBeforeEventStart),

@@ -1,6 +1,6 @@
 package models
 
-import java.time.Instant
+import java.time.{Clock, Instant}
 import javax.inject.Inject
 
 import akka.actor.ActorSystem
@@ -14,7 +14,11 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class EventScheduler @Inject() (system: ActorSystem, nestApi: NestApi, googleApi: GoogleApi)(implicit exec: ExecutionContext) {
+class EventScheduler @Inject() (
+  system: ActorSystem,
+  clock: Clock,
+  nestApi: NestApi,
+  googleApi: GoogleApi)(implicit exec: ExecutionContext) {
   private[models] val etaWindowBeginsBeforeEventStart = java.time.Duration.ofMinutes(15)
   private[models] val etaWindowEndsBeforeEventStart = java.time.Duration.ofMinutes(5)
   private[models] val upcomingEventsWindowBeginsIn = java.time.Duration.ofMinutes(5)
@@ -23,7 +27,7 @@ class EventScheduler @Inject() (system: ActorSystem, nestApi: NestApi, googleApi
   private val logger: Logger = Logger(this.getClass)
 
   private[models] def getUpcomingEventsAtHome(accessToken: String, calendarId: String): Future[Seq[TimedEvent]] = {
-    val now = Instant.now()
+    val now = Instant.now(clock)
     val intervalStart = now.plus(upcomingEventsWindowBeginsIn)
     val intervalEnd = now.plus(upcomingEventsWindowEndsIn)
 
