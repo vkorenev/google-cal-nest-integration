@@ -37,6 +37,10 @@ class MainController @Inject() (
     throw new Exception("You should configure Google Client Secret in /conf/auth.conf")
   }
 
+  def index = Action {
+    Ok(views.html.index())
+  }
+
   def selectStructure = Action.async { request =>
     request.session.get(nestAccessTokenSessionKey) map { accessToken =>
       nestApi.withNest(accessToken) { rootRef =>

@@ -1,4 +1,5 @@
-GET         /                             controllers.MainController.selectStructure
+GET         /                             controllers.MainController.index
+GET         /selectStructure              controllers.MainController.selectStructure
 GET         /receiveNestAuthCode          controllers.MainController.receiveNestAuthCode(code)
 GET         /setStructure                 controllers.MainController.setStructure(structureId)
 GET         /receiveGoogleAuthCode        controllers.MainController.receiveGoogleAuthCode(code)
