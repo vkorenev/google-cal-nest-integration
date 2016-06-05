@@ -3,22 +3,22 @@ package controllers
 import javax.inject.{Inject, Singleton}
 
 import models.EventScheduler
+import models.google.auth.GoogleAuth
 import models.google.calendar.{GoogleApi, GoogleConfig}
 import models.nest.{NestApi, NestAuth}
 import play.api.Configuration
 import play.api.data.Forms._
 import play.api.data._
-import play.api.libs.ws.WSClient
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class MainController @Inject() (
-  ws: WSClient,
   configuration: Configuration,
   nestAuth: NestAuth,
   nestApi: NestApi,
+  googleAuth: GoogleAuth,
   googleApi: GoogleApi,
   eventScheduler: EventScheduler)(implicit exec: ExecutionContext) extends Controller {
 
@@ -69,28 +69,22 @@ class MainController @Inject() (
   }
 
   private[this] def googleAuthRedirect(state: Option[String], scopes: String*) =
-    Redirect(GoogleConfig.authUrl, Map(
+    Redirect(GoogleAuth.authUrl, Map(
       "response_type" -> Seq("code"),
       "client_id" -> Seq(googleClientId),
       "redirect_uri" -> Seq("http://localhost:9000/receiveGoogleAuthCode"),
       "scope" -> Seq(scopes.mkString(" ")),
       "state" -> state.toSeq,
+      "prompt" -> Seq("consent"),
       "access_type" -> Seq("offline")))
 
   val calendarsForm = Form(single("calendars" -> seq(text)))
 
   def receiveGoogleAuthCode(code: String) = Action.async { request =>
     for {
-      response <- ws.url(GoogleConfig.tokenUrl).post(Map(
-        "code" -> Seq(code),
-        "client_id" -> Seq(googleClientId),
-        "client_secret" -> Seq(googleClientSecret),
-        "redirect_uri" -> Seq("http://localhost:9000/receiveGoogleAuthCode"),
-        "grant_type" -> Seq("authorization_code")))
-      json = response.json
-      accessToken = (json \ "access_token").as[String]
-      refreshToken = (json \ "refresh_token").asOpt[String]
-      expiresIn = (json \ "expires_in").as[Long]
+      refreshableToken <- googleAuth.getRefreshableToken(googleClientId, googleClientSecret)(code,
+        "http://localhost:9000/receiveGoogleAuthCode")
+      accessToken = refreshableToken.accessToken
       calendars <- googleApi.getCalendars(accessToken)
     } yield Ok(views.html.selectCalendars(calendars)).withSession(request.session + ("google_access_token" -> accessToken))
   }
