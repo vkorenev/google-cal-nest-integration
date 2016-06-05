@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import models.EventScheduler
 import models.google.calendar.{GoogleApi, GoogleConfig}
-import models.nest.{NestApi, NestConfig}
+import models.nest.{NestApi, NestAuth}
 import play.api.Configuration
 import play.api.data.Forms._
 import play.api.data._
@@ -17,6 +17,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class MainController @Inject() (
   ws: WSClient,
   configuration: Configuration,
+  nestAuth: NestAuth,
   nestApi: NestApi,
   googleApi: GoogleApi,
   eventScheduler: EventScheduler)(implicit exec: ExecutionContext) extends Controller {
@@ -58,7 +59,7 @@ class MainController @Inject() (
   }
 
   private[this] def nestAuthRedirect(state: String) =
-    Redirect(NestConfig.authUrl, Map(
+    Redirect(NestAuth.authUrl, Map(
       "client_id" -> Seq(nestProductId),
       "state" -> Seq(state)))
 
@@ -112,12 +113,7 @@ class MainController @Inject() (
   }
 
   def receiveNestAuthCode(code: String) = Action.async {
-    ws.url(NestConfig.tokenUrl).post(Map(
-      "client_id" -> Seq(nestProductId),
-      "code" -> Seq(code),
-      "client_secret" -> Seq(nestProductSecret),
-      "grant_type" -> Seq("authorization_code"))) map { response =>
-      val accessToken = (response.json \ "access_token").as[String]
+    nestAuth.getAccessToken(nestProductId, nestProductSecret)(code) map { accessToken =>
       Redirect(routes.MainController.selectStructure()).withSession(nestAccessTokenSessionKey -> accessToken)
     }
   }
