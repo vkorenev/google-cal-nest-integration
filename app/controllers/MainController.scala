@@ -2,14 +2,16 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import models.EventScheduler
-import models.google.auth.GoogleAuth
+import models.google.auth.RefreshableToken.format
+import models.google.auth.{GoogleAuth, RefreshableToken}
 import models.google.calendar.{GoogleApi, GoogleConfig}
 import models.nest.{NestApi, NestAuth}
 import play.api.Configuration
 import play.api.data.Forms._
 import play.api.data._
+import play.api.libs.json.Json
 import play.api.mvc._
+import services.UpdateScheduler
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -20,7 +22,7 @@ class MainController @Inject() (
   nestApi: NestApi,
   googleAuth: GoogleAuth,
   googleApi: GoogleApi,
-  eventScheduler: EventScheduler)(implicit exec: ExecutionContext) extends Controller {
+  updateScheduler: UpdateScheduler)(implicit exec: ExecutionContext) extends Controller {
 
   private val nestAccessTokenSessionKey = "nest-access-token"
   private val nestStructureIdSessionKey = "nest-structure-id"
@@ -74,21 +76,21 @@ class MainController @Inject() (
     for {
       refreshableToken <- googleAuth.getRefreshableToken(googleClientId, googleClientSecret)(code,
         "http://localhost:9000/receiveGoogleAuthCode")
-      accessToken = refreshableToken.accessToken
-      calendars <- googleApi.getCalendars(accessToken)
-    } yield Ok(views.html.selectCalendars(calendars)).withSession(request.session + ("google_access_token" -> accessToken))
+      calendars <- googleApi.getCalendars(refreshableToken.accessToken)
+      tokenStr = Json.stringify(Json.toJson(refreshableToken))
+    } yield Ok(views.html.selectCalendars(calendars)).withSession(request.session + ("google_token" -> tokenStr))
   }
 
   def setCalendars = Action { implicit request =>
-    request.session.get("google_access_token") map { googleAccessToken =>
+    request.session.get("google_token") map { googleAccessToken =>
       calendarsForm.bindFromRequest.fold(errors => {
         BadRequest
       }, calendarIds => {
-        calendarIds foreach { calendarId =>
-          val nestAccessToken = request.session.get(nestAccessTokenSessionKey).get
-          val structureId = request.session.get(nestStructureIdSessionKey).get
-          eventScheduler.scheduleCheckUpcomingEvents(googleAccessToken, calendarId, nestAccessToken, structureId)
-        }
+        val nestAccessToken = request.session.get(nestAccessTokenSessionKey).get
+        val structureId = request.session.get(nestStructureIdSessionKey).get
+        val googleRefreshableToken = Json.parse(googleAccessToken).as[RefreshableToken]
+        updateScheduler.scheduleCheckUpcomingEvents(googleClientId, googleClientSecret, googleRefreshableToken,
+          calendarIds, nestAccessToken, structureId)
         Ok(views.html.calendarsImportFinished(calendarIds.size)).withNewSession
       })
     } getOrElse {

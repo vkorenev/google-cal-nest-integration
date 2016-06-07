@@ -1,7 +1,7 @@
 package models.nest
 
 import java.time.Instant
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 
 import com.firebase.client.{DataSnapshot, Firebase}
 import vkorenev.firebase.ScalaFirebase
@@ -9,6 +9,7 @@ import vkorenev.firebase.ScalaFirebase
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class NestApi @Inject() (implicit exec: ExecutionContext) {
   def withNest[T](accessToken: String)(block: Firebase => Future[T]): Future[T] = {
     val rootRef = new Firebase(NestConfig.apiUrl)

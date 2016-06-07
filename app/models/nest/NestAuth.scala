@@ -1,12 +1,13 @@
 package models.nest
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 
 import play.api.http.Status
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class NestAuth @Inject() (ws: WSClient)(implicit exec: ExecutionContext) {
   import NestAuth._
 

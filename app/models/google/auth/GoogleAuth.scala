@@ -1,14 +1,17 @@
 package models.google.auth
 
 import java.time.Clock
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 
+import akka.NotUsed
+import akka.stream.scaladsl.Source
 import play.api.http.Status
-import play.api.libs.json.JsValue
+import play.api.libs.json.{Format, JsValue, Json}
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class GoogleAuth @Inject() (ws: WSClient, clock: Clock = Clock.systemUTC())(implicit exec: ExecutionContext) {
   import GoogleAuth._
   private[this] def millisFromNow(durationSeconds: Long) = clock.millis() + durationSeconds * 1000
@@ -53,6 +56,13 @@ class GoogleAuth @Inject() (ws: WSClient, clock: Clock = Clock.systemUTC())(impl
       }
     }
 
+  def accessTokenSource(clientId: String, clientSecret: String, refreshableToken: RefreshableToken): Source[String, NotUsed] =
+    Source.unfoldAsync(refreshableToken) { token =>
+      refreshIfNecessary(clientId, clientSecret)(token) map { refreshedToken =>
+        Some((refreshedToken, refreshedToken.accessToken))
+      }
+    }
+
   private[this] def error(json: JsValue) = {
     val error = (json \ "error").asOpt[String]
     val errorDescription = (json \ "error_description").asOpt[String]
@@ -78,5 +88,9 @@ object GoogleAuth {
 }
 
 case class RefreshableToken(accessToken: String, refreshToken: String, expiresAtMillis: Long)
+
+object RefreshableToken {
+  implicit val format: Format[RefreshableToken] = Json.format[RefreshableToken]
+}
 
 case class AuthException(message: String) extends Exception(message)

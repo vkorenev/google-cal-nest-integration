@@ -1,7 +1,7 @@
 package models.google.calendar
 
 import java.time.{Instant, LocalDate, OffsetDateTime}
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Reads}
@@ -9,6 +9,7 @@ import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class GoogleApi @Inject() (ws: WSClient)(implicit ec: ExecutionContext) {
   import GoogleApi._
 
