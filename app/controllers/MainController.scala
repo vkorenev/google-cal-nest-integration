@@ -59,24 +59,14 @@ class MainController @Inject() (
   }
 
   private[this] def nestAuthRedirect(state: String) =
-    Redirect(NestAuth.authUrl, Map(
-      "client_id" -> Seq(nestProductId),
-      "state" -> Seq(state)))
+    Redirect(NestAuth.authUrl, NestAuth.authQueryParams(nestProductId, state))
 
   def setStructure(structureId: String) = Action { request =>
-    googleAuthRedirect(None, GoogleConfig.calendarReadonlyScope)
-      .withSession(request.session + (nestStructureIdSessionKey -> structureId))
+    googleAuthRedirect(None).withSession(request.session + (nestStructureIdSessionKey -> structureId))
   }
 
-  private[this] def googleAuthRedirect(state: Option[String], scopes: String*) =
-    Redirect(GoogleAuth.authUrl, Map(
-      "response_type" -> Seq("code"),
-      "client_id" -> Seq(googleClientId),
-      "redirect_uri" -> Seq("http://localhost:9000/receiveGoogleAuthCode"),
-      "scope" -> Seq(scopes.mkString(" ")),
-      "state" -> state.toSeq,
-      "prompt" -> Seq("consent"),
-      "access_type" -> Seq("offline")))
+  private[this] def googleAuthRedirect(state: Option[String]) =
+    Redirect(GoogleAuth.authUrl, GoogleAuth.authQueryParams(googleClientId, state, GoogleConfig.calendarReadonlyScope))
 
   val calendarsForm = Form(single("calendars" -> seq(text)))
 
@@ -102,7 +92,7 @@ class MainController @Inject() (
         Ok(views.html.calendarsImportFinished(calendarIds.size)).withNewSession
       })
     } getOrElse {
-      googleAuthRedirect(None, GoogleConfig.calendarReadonlyScope)
+      googleAuthRedirect(None)
     }
   }
 

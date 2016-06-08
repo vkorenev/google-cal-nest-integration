@@ -31,6 +31,10 @@ class NestAuth @Inject() (ws: WSClient)(implicit exec: ExecutionContext) {
 object NestAuth {
   val authUrl = "https://home.nest.com/login/oauth2"
   val tokenUrl = "https://api.home.nest.com/oauth2/access_token"
+
+  def authQueryParams(productId: String, state: String) = Map(
+    "client_id" -> Seq(productId),
+    "state" -> Seq(state))
 }
 
 case class AuthException(message: String) extends Exception(message)

@@ -65,6 +65,15 @@ object GoogleAuth {
   val authUrl = "https://accounts.google.com/o/oauth2/v2/auth"
   val tokenUrl = "https://www.googleapis.com/oauth2/v4/token"
 
+  def authQueryParams(clientId: String, state: Option[String], scopes: String*) = Map(
+    "response_type" -> Seq("code"),
+    "client_id" -> Seq(clientId),
+    "redirect_uri" -> Seq("http://localhost:9000/receiveGoogleAuthCode"),
+    "scope" -> Seq(scopes.mkString(" ")),
+    "state" -> state.toSeq,
+    "prompt" -> Seq("consent"),
+    "access_type" -> Seq("offline"))
+
   private[GoogleAuth] val refreshIfExpiresInMillis = 600000
 }
 
