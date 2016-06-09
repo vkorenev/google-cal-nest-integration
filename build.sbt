@@ -1,6 +1,17 @@
 name := "google-cal-nest-integration"
-version := "0.1.0-SNAPSHOT"
-scalaVersion := "2.11.8"
+
+val commonSettings = Seq(
+  version := "0.1.0-SNAPSHOT",
+  scalaVersion := "2.11.8"
+)
+
+lazy val root = (project in file("."))
+  .settings(commonSettings: _*)
+  .aggregate(scalaFirebase)
+  .dependsOn(scalaFirebase)
+
+lazy val scalaFirebase = project
+  .settings(commonSettings: _*)
 
 val specs2Version = "3.8.3-20160524134053-8145e17"
 
