@@ -3,7 +3,6 @@ package services
 import java.time._
 
 import com.firebase.client.Firebase
-import models.AppConfig
 import models.google.calendar.TimedEvent
 import models.nest.NestApi
 import org.junit.runner.RunWith

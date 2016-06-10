@@ -1,4 +1,4 @@
-package models
+package services
 
 import java.time.Duration
 import javax.inject.{Inject, Singleton}

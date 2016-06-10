@@ -3,7 +3,6 @@ package services
 import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
 
-import models.AppConfig
 import models.google.calendar.TimedEvent
 import models.nest.NestApi
 import play.api.Logger

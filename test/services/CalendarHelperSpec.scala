@@ -2,8 +2,6 @@ package services
 
 import java.time._
 
-import models.AppConfig
-import models.google.auth.GoogleAuth
 import models.google.calendar.{AllDayEvent, GoogleApi, TimedEvent}
 import org.junit.runner.RunWith
 import org.specs2.concurrent.ExecutionEnv

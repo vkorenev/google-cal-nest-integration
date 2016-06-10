@@ -3,7 +3,6 @@ package services
 import javax.inject.{Inject, Singleton}
 
 import akka.stream.Materializer
-import models.AppConfig
 import models.google.auth.{GoogleAuth, RefreshableToken}
 import play.api.Logger
 import utils.JavaConversions.toFiniteDuration
