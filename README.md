@@ -5,6 +5,8 @@
 This application watches Google Calendars for events which are going to be held at home.
 Then it reports ETA based on assumption that the user returns home before such an event.
 
+[Watch a video about me and this project.](https://drive.google.com/open?id=0B7C4Dv0LZpYRWGZJcWhvRFotTVE)
+
 ## Requirements
 
 [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
